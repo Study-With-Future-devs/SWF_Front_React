@@ -16,6 +16,8 @@ export interface Student {
   tipoUsuario: UserRole; // sempre 'Aluno' nesse caso
   funcao: string;
   telasPermitidasIds: number[];
+  dataNascimento: string;
+  periodo:string;
 
   // Campos específicos do aluno
   matricula?: string;

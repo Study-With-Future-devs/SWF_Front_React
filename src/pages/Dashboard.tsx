@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
+import { getAllStudents } from '@/service/studentService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, GraduationCap, BookOpen, ClipboardList } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -8,7 +10,22 @@ const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const { students = [], teachers = [], classes = [], subjects = [], grades = [] } = useData();
+  const { teachers = [], classes = [], subjects = [], grades = [] } = useData();
+
+  const [students, setStudents] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        const data = await getAllStudents();
+        setStudents(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('Erro ao buscar alunos:', error);
+      }
+    };
+
+    fetchStudents();
+  }, []);
 
   // Filtrar stats dependendo do tipo de usuário
   const stats =
