@@ -4,9 +4,25 @@ import { useData } from '@/contexts/DataContext';
 import { getAllStudents } from '@/service/studentService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, GraduationCap, BookOpen, ClipboardList } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from 'recharts';
 
-const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))'];
+const COLORS = [
+  'hsl(var(--chart-1))',
+  'hsl(var(--chart-2))',
+  'hsl(var(--chart-3))',
+  'hsl(var(--chart-4))',
+];
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -27,28 +43,39 @@ export default function Dashboard() {
     fetchStudents();
   }, []);
 
-  // Filtrar stats dependendo do tipo de usuário
+  // Dados mockados mais ricos para notas por bimestre
+  const gradesMock = [
+    { quarter: 1, grades: [7.5, 8.0, 6.0, 9.0, 7.8, 8.5] },
+    { quarter: 2, grades: [8.2, 9.0, 8.5, 7.5, 9.3, 8.7] },
+    { quarter: 3, grades: [6.5, 7.0, 7.8, 8.2, 6.9, 7.5] },
+    { quarter: 4, grades: [9.0, 8.8, 9.5, 9.2, 8.7, 9.1] },
+  ];
+
+  // Calcula total de notas e média por bimestre
+  const gradesByQuarter = gradesMock.map(q => ({
+    name: `${q.quarter}º Bim`,
+    total: q.grades.length,
+    media: parseFloat(
+      (q.grades.reduce((acc, n) => acc + n, 0) / q.grades.length).toFixed(1)
+    ),
+  }));
+
+  // Distribuição de alunos por turma (mock simples)
+  const studentsByClass = classes.map(c => ({
+    name: c.name || `Turma ${c.id || ''}`,
+    value: c.studentIds?.length || Math.floor(Math.random() * 30) + 10,
+  }));
+
+  // Estatísticas principais
   const stats =
     user?.tipoUsuario === 'Aluno'
-      ? [
-          { title: 'Minhas Notas', value: grades.length, icon: BookOpen, color: 'text-primary' },
-        ]
+      ? [{ title: 'Minhas Notas', value: grades.length, icon: BookOpen, color: 'text-primary' }]
       : [
           { title: 'Total de Alunos', value: students.length, icon: Users, color: 'text-primary' },
           { title: 'Total de Professores', value: teachers.length, icon: GraduationCap, color: 'text-accent' },
           { title: 'Total de Turmas', value: classes.length, icon: BookOpen, color: 'text-chart-3' },
           { title: 'Total de Disciplinas', value: subjects.length, icon: ClipboardList, color: 'text-chart-4' },
         ];
-
-  const gradesByQuarter = [1, 2, 3, 4].map(q => ({
-    name: `${q}º Bim`,
-    total: grades.filter(g => g.quarter === q)?.length || 0,
-  }));
-
-  const studentsByClass = classes.map(c => ({
-    name: c.name,
-    value: c.studentIds?.length || 0,
-  }));
 
   return (
     <div className="space-y-6 p-6">
@@ -57,6 +84,7 @@ export default function Dashboard() {
         <p className="text-muted-foreground">Visão geral do sistema de gestão escolar</p>
       </div>
 
+      {/* Cards de estatísticas */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map(stat => (
           <Card key={stat.title}>
@@ -73,6 +101,7 @@ export default function Dashboard() {
 
       {user?.tipoUsuario !== 'Aluno' && (
         <div className="grid gap-4 md:grid-cols-2">
+          {/* Gráfico de notas por bimestre */}
           <Card>
             <CardHeader>
               <CardTitle>Notas Lançadas por Bimestre</CardTitle>
@@ -84,12 +113,14 @@ export default function Dashboard() {
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="total" fill="hsl(var(--primary))" />
+                  <Bar dataKey="total" name="Qtd. de Notas" fill="hsl(var(--primary))" />
+                  <Bar dataKey="media" name="Média das Notas" fill="hsl(var(--chart-2))" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
 
+          {/* Gráfico de alunos por turma */}
           <Card>
             <CardHeader>
               <CardTitle>Distribuição de Alunos por Turma</CardTitle>
